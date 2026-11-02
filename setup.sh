@@ -31,5 +31,13 @@ console.log('Android project patched with AdMob app id:', APP_ID);
 PATCH_EOF
 npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor-community/admob
 [ -d android ] || npx cap add android
+# --- App icon: uses the first .png/.jpg image found in the repository root (optional) ---
+ICON=$(find . -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | head -1)
+if [ -n "$ICON" ]; then
+  echo "Using app icon: $ICON"
+  mkdir -p assets
+  if command -v convert >/dev/null 2>&1; then convert "$ICON" -resize '1024x1024!' assets/icon-only.png; else cp "$ICON" assets/icon-only.png; fi
+  ( npm install --save-dev @capacitor/assets && npx capacitor-assets generate --android --iconBackgroundColor '#6a35c9' --iconBackgroundColorDark '#6a35c9' ) || echo "Icon generation skipped - default icon will be used"
+fi
 node patch-android.js
 npx cap sync android
